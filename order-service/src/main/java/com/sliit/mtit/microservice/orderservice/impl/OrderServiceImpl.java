@@ -25,15 +25,16 @@ public class OrderServiceImpl {
         messagesArr.put("1001","Order created successfully");
         messagesArr.put("1002","User data retrieved successfully");
         messagesArr.put("1003","Product data retrieved successfully");
-        messagesArr.put("1004","Successfully price calculated");
-        messagesArr.put("1005","Successfully shipment data received");
-        messagesArr.put("1006","Successfully discount calculated");
+        messagesArr.put("1004","Successfully Price calculated");
+        messagesArr.put("1005","Successfully Shipment data received");
+        messagesArr.put("1006","Successfully Discount calculated");
 
-        messagesArr.put("2001","Order couldn't create.try again!");
+        messagesArr.put("2001","");
         messagesArr.put("2002","User name or password is wrong.try again!");
         messagesArr.put("2003","Unavailable product.try again!");
-        messagesArr.put("2004","Unavailable product so couldn't calculate price.try again!");
-        messagesArr.put("2005","Shipment data didn't received.try again!");
+        messagesArr.put("2004","");
+        messagesArr.put("2005","");
+        messagesArr.put("2006","");
 
         productsObjectArr[0] = new Product("pr1001","Biscuit", 20.0, "Maliban");
         productsObjectArr[1] = new Product("pr1002","Milk", 40.0, "Anchor");
@@ -106,8 +107,8 @@ public class OrderServiceImpl {
         ShipmentResponse shipmentResponse = new ShipmentResponse();
         // Validate User and Get Data....
         UserDetailRequest userDetailRequest =  new UserDetailRequest();
-        userDetailRequest.setUserPass(shipmentRequest.getUserPass());
         userDetailRequest.setUserEmail(shipmentRequest.getUserEmail());
+        userDetailRequest.setUserPass(shipmentRequest.getUserPass());
         UserDetailResponse userDetailResponse = GetUserData(userDetailRequest);
         if(userDetailResponse.getSuccessCode().equals("1002")){
             // Set Shipment data
@@ -117,6 +118,7 @@ public class OrderServiceImpl {
             shipmentResponse.setSuccessMessage(GetSuccessCode("1005"));
             shipmentResponse.setSuccessCode("1005");
         }else{
+            System.out.println("GetShipmentData - Shipment Error");
             shipmentResponse.setSuccessMessage(GetSuccessCode(userDetailResponse.getSuccessCode()));
             shipmentResponse.setSuccessCode(userDetailResponse.getSuccessCode());
         }
@@ -131,14 +133,15 @@ public class OrderServiceImpl {
 
     public PriceCalculationResponse PriceCalculation(PriceCalculationRequest priceCalculationRequest){
         PriceCalculationResponse priceCalculationResponse = new PriceCalculationResponse();
-
         // Validate Product and Get Data ....
         ProductRequest productRequest = new ProductRequest();
         productRequest.setProductId(priceCalculationRequest.getProductId());
         ProductResponse productResponse = GetProductData(productRequest);
         if(productResponse.getSuccessCode().equals("1003")){
+            // Get Calculations ...
             UserDiscountRequest userDiscountRequest = new UserDiscountRequest();
             userDiscountRequest.setUserEmail(priceCalculationRequest.getUserEmail());
+            userDiscountRequest.setUserPass(priceCalculationRequest.getUserPass());
             UserDiscountResponse userDiscountResponse = UserDiscount(userDiscountRequest);
             if(userDiscountResponse.getSuccessCode().equals("1006")){
                 double subTotal = priceCalculationRequest.getProductQuantity() * productResponse.getProductPrice();
@@ -156,10 +159,12 @@ public class OrderServiceImpl {
                 priceCalculationResponse.setSuccessMessage(GetSuccessCode("1004"));
                 priceCalculationResponse.setSuccessCode("1004");
             }else{
+                System.out.println("PriceCalculation - Price Calculation Error");
                 priceCalculationResponse.setSuccessMessage(GetSuccessCode(userDiscountResponse.getSuccessCode()));
                 priceCalculationResponse.setSuccessCode(userDiscountResponse.getSuccessCode());
             }
         }else{
+            System.out.println("PriceCalculation - Product Error");
             priceCalculationResponse.setSuccessMessage(GetSuccessCode(productResponse.getSuccessCode()));
             priceCalculationResponse.setSuccessCode(productResponse.getSuccessCode());
         }
@@ -197,7 +202,10 @@ public class OrderServiceImpl {
             userDiscountResponse.setUserEmail(userDetailResponse.getUserEmail());
             userDiscountResponse.setUserType(userType);
             userDiscountResponse.setDiscountPercentage(discount);
+            userDiscountResponse.setSuccessMessage(GetSuccessCode("1006"));
+            userDiscountResponse.setSuccessCode("1006");
         }else{
+            System.out.println("UserDiscount - UserEmail or Password Error");
             userDiscountResponse.setSuccessMessage(GetSuccessCode(userDetailResponse.getSuccessCode()));
             userDiscountResponse.setSuccessCode(userDetailResponse.getSuccessCode());
         }
@@ -209,68 +217,68 @@ public class OrderServiceImpl {
     public OrderResponse CreateOrder(OrderRequest orderRequest){
         // This is the order response object
         OrderResponse orderResponse = new OrderResponse();
-
         // Validate User ....
         UserDetailRequest userDetailRequest = new UserDetailRequest();
         userDetailRequest.setUserEmail(orderRequest.getUserEmail());
         userDetailRequest.setUserPass(orderRequest.getUserPass());
         UserDetailResponse userDetailResponse =  GetUserData(userDetailRequest);
-
         if(userDetailResponse.getSuccessCode().equals("1002") ){
             // Get Shipping Data ....
             ShipmentRequest shipmentRequest = new ShipmentRequest();
             shipmentRequest.setUserEmail(orderRequest.getUserEmail());
+            shipmentRequest.setUserPass(orderRequest.getUserPass());
             ShipmentResponse shipmentResponse = GetShipmentData(shipmentRequest);
-
             if(shipmentResponse.getSuccessCode().equals("1005")){
-                // Set Shipping Data
-                orderResponse.setShippingTrackId(shipmentResponse.getShippingTrackId());
-                orderResponse.setShippingAddress(shipmentResponse.getShippingAddress());
-                orderResponse.setPossibleShippingDate(shipmentResponse.getPossibleShippingDate());
-
                 // Get Product Details ....
                 ProductRequest productRequest = new ProductRequest();
                 productRequest.setProductId(orderRequest.getProductId());
                 ProductResponse productResponse = GetProductData(productRequest);
-
                 if(productResponse.getSuccessCode().equals("1003")){
-                    // Set Order Response
-                    orderResponse.setProductQuantity(orderRequest.getProductQuantity());
-                    orderResponse.setProductName(productResponse.getProductName());
-                    orderResponse.setProductId(productResponse.getProductId());
-                    orderResponse.setProductSeller(productResponse.getProductSeller());
-                    orderResponse.setProductPrice(productResponse.getProductPrice());
-
                     // Get Calculated price ....
                     PriceCalculationRequest priceCalculationRequest = new PriceCalculationRequest();
                     priceCalculationRequest.setProductId(orderRequest.getProductId());
                     priceCalculationRequest.setProductQuantity(orderRequest.getProductQuantity());
                     priceCalculationRequest.setUserEmail(orderRequest.getUserEmail());
+                    priceCalculationRequest.setUserPass(orderRequest.getUserPass());
                     PriceCalculationResponse priceCalculationResponse = PriceCalculation(priceCalculationRequest);
                     if(priceCalculationResponse.getSuccessCode().equals("1004")){
+                        // Request is totally successful
+                        // Set Shipping Data
+                        orderResponse.setShippingTrackId(shipmentResponse.getShippingTrackId());
+                        orderResponse.setShippingAddress(shipmentResponse.getShippingAddress());
+                        orderResponse.setPossibleShippingDate(shipmentResponse.getPossibleShippingDate());
+                        // Set Product Data
+                        orderResponse.setProductQuantity(orderRequest.getProductQuantity());
+                        orderResponse.setProductName(productResponse.getProductName());
+                        orderResponse.setProductId(productResponse.getProductId());
+                        orderResponse.setProductSeller(productResponse.getProductSeller());
+                        orderResponse.setProductPrice(productResponse.getProductPrice());
                         // Set Calculated price
                         orderResponse.setTax(priceCalculationResponse.getTax());
                         orderResponse.setSubTotal(priceCalculationResponse.getSubTotal());
                         orderResponse.setTotal(priceCalculationResponse.getTotal());
                         orderResponse.setTotalDiscount(priceCalculationResponse.getTotalDiscount());
-                        // Request is totally successful
+                        // Set Success Message and Order ID
+                        orderResponse.setOrderId(UUID.randomUUID().toString());
                         orderResponse.setSuccessMessage(GetSuccessCode("1001"));
                         orderResponse.setSuccessCode("1001");
-                        orderResponse.setOrderId(UUID.randomUUID().toString());
-
                     }else{
+                        System.out.println("CreateOrder - Price Calculation Error");
                         orderResponse.setSuccessMessage(GetSuccessCode(priceCalculationResponse.getSuccessCode()));
                         orderResponse.setSuccessCode(priceCalculationResponse.getSuccessCode());
                     }
                 }else{
+                    System.out.println("CreateOrder - Product Error");
                     orderResponse.setSuccessMessage(GetSuccessCode(productResponse.getSuccessCode()));
                     orderResponse.setSuccessCode(productResponse.getSuccessCode());
                 }
             }else{
+                System.out.println("CreateOrder - Shipment Error");
                 orderResponse.setSuccessMessage(GetSuccessCode(shipmentResponse.getSuccessCode()));
                 orderResponse.setSuccessCode(shipmentResponse.getSuccessCode());
             }
         }else{
+            System.out.println("CreateOrder - UserEmail or Password Error");
             orderResponse.setSuccessMessage(GetSuccessCode(userDetailResponse.getSuccessCode()));
             orderResponse.setSuccessCode(userDetailResponse.getSuccessCode());
         }

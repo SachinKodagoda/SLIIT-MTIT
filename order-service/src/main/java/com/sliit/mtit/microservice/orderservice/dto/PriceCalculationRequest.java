@@ -4,6 +4,7 @@ public class PriceCalculationRequest {
     private String userEmail;
     private Double productQuantity;
     private String productId;
+    private String userPass;
 
     public String getUserEmail() {
         return userEmail;
@@ -27,5 +28,13 @@ public class PriceCalculationRequest {
 
     public void setProductId(String productId) {
         this.productId = productId;
+    }
+
+    public String getUserPass() {
+        return userPass;
+    }
+
+    public void setUserPass(String userPass) {
+        this.userPass = userPass;
     }
 }

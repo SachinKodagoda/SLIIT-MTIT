@@ -1,7 +1,8 @@
-package com.sliit.mtit.microservice.productservice.controller;
+package com.sliit.mtit.microservice.discountservice.controller;
 
-import com.sliit.mtit.microservice.productservice.dto.*;
-import com.sliit.mtit.microservice.productservice.impl.*;
+import com.sliit.mtit.microservice.discountservice.dto.*;
+import com.sliit.mtit.microservice.discountservice.impl.*;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,14 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
-@RequestMapping("/products")
-public class ProductController {
+@RequestMapping("/discount")
+public class DiscountController {
 
     @Autowired
-    private ProductServiceImpl productServiceImpl;
+    private DiscountServiceImpl discountServiceImpl;
 
     @PostMapping(consumes = "application/json", produces="application/json")
-    public @ResponseBody ProductResponse productController(@RequestBody ProductRequest request){
-        return productServiceImpl.GetProductData(request);
+    public @ResponseBody UserDiscountResponse discountController(@RequestBody UserDiscountRequest request){
+        return discountServiceImpl.UserDiscount(request);
     }
 }

@@ -20,7 +20,7 @@ public class UserController {
     private UserServiceImpl userServiceImpl;
 
     @PostMapping(consumes = "application/json", produces="application/json")
-    public @ResponseBody UserDetailResponse UserController(@RequestBody UserDetailRequest request){
+    public @ResponseBody UserDetailResponse userController(@RequestBody UserDetailRequest request){
         return userServiceImpl.GetUserData(request);
     }
 }

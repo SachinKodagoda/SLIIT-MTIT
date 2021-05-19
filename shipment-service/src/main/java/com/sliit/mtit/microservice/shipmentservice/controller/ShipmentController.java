@@ -1,7 +1,8 @@
-package com.sliit.mtit.microservice.productservice.controller;
+package com.sliit.mtit.microservice.shipmentservice.controller;
 
-import com.sliit.mtit.microservice.productservice.dto.*;
-import com.sliit.mtit.microservice.productservice.impl.*;
+import com.sliit.mtit.microservice.shipmentservice.dto.*;
+import com.sliit.mtit.microservice.shipmentservice.impl.*;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,14 +13,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
-@RequestMapping("/products")
-public class ProductController {
+@RequestMapping("/shipment")
+public class ShipmentController {
 
     @Autowired
-    private ProductServiceImpl productServiceImpl;
+    private ShipmentServiceImpl shipmentServiceImpl;
 
     @PostMapping(consumes = "application/json", produces="application/json")
-    public @ResponseBody ProductResponse productController(@RequestBody ProductRequest request){
-        return productServiceImpl.GetProductData(request);
+    public @ResponseBody ShipmentResponse shipmentController(@RequestBody ShipmentRequest request){
+        return shipmentServiceImpl.GetShipmentData(request);
     }
 }

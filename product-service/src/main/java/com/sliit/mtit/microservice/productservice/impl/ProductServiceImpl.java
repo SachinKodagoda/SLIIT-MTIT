@@ -1,8 +1,6 @@
-package com.sliit.mtit.microservice.userservice.impl;
+package com.sliit.mtit.microservice.productservice.impl;
 
-import com.sliit.mtit.microservice.userservice.dto.User;
-import com.sliit.mtit.microservice.userservice.dto.UserDetailResponse;
-import com.sliit.mtit.microservice.userservice.dto.UserDetailRequest;
+import com.sliit.mtit.microservice.productservice.dto.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -13,13 +11,13 @@ import org.springframework.web.client.RestTemplate;
 import java.util.*;
 
 @Service
-public class UserServiceImpl {
+public class ProductServiceImpl {
     @Autowired
     private RestTemplate restTemplate;
 
     // Static Data used instead of Database since lectures are not going that deep --------
     public static Map<String, String> messagesArr;
-    public static User[] usersObjectArr = new User[2] ;
+    public static Product[] productsObjectArr = new Product[3] ;
     static {
         messagesArr = new HashMap<>();
         messagesArr.put("1001","Order created successfully");
@@ -35,10 +33,10 @@ public class UserServiceImpl {
         messagesArr.put("2004","");
         messagesArr.put("2005","");
         messagesArr.put("2006","");
-
-        usersObjectArr[0] = new User("Duminda","Wattala", "duminda.g.k@gmail.com", "0765742200", "pass123", "type1");
-        usersObjectArr[1] = new User("Abinaya","Negombo", "abinaya.yoga@gmail.com", "0765122944", "pass456", "type2");
-    }
+        productsObjectArr[0] = new Product("pr1001","Biscuit", 20.0, "Maliban");
+        productsObjectArr[1] = new Product("pr1002","Milk", 40.0, "Anchor");
+        productsObjectArr[2] = new Product("pr1003","Ice Cream", 30.0, "Haagen-Dazs");
+ }
 
 
     // GetSuccessCode Function --------------------------------------------------
@@ -51,28 +49,25 @@ public class UserServiceImpl {
         return "Something went wrong";
     }
 
-    // GetUserData API ==================================================================
-    public UserDetailResponse GetUserData(UserDetailRequest userDetailRequest){
-        UserDetailResponse userDetailResponse = new UserDetailResponse();
-        userDetailResponse.setSuccessMessage(GetSuccessCode("2002"));
-        userDetailResponse.setSuccessCode("2002");
-        for (var user: usersObjectArr) {
-            if(user.getUserEmail().equals(userDetailRequest.getUserEmail())){
-                if(user.getUserPass().equals(userDetailRequest.getUserPass())){
-                    userDetailResponse.setUserShippingAddress(user.getUserShippingAddress());
-                    userDetailResponse.setUserContact(user.getUserContact());
-                    userDetailResponse.setUserEmail(user.getUserEmail());
-                    userDetailResponse.setUserName(user.getUserName());
-                    userDetailResponse.setUserPass(user.getUserPass());
-                    userDetailResponse.setUserType(user.getUserType());
-                    userDetailResponse.setSuccessMessage(GetSuccessCode("1002"));
-                    userDetailResponse.setSuccessCode("1002");
-                }
+    // GetProductData API ==================================================================
+    public ProductResponse GetProductData(ProductRequest productRequest){
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setSuccessMessage(GetSuccessCode("2003"));
+        productResponse.setSuccessCode("2003");
+        for (var product: productsObjectArr) {
+            if(product.getProductId().equals(productRequest.getProductId())){
+                productResponse.setProductId(product.getProductId());
+                productResponse.setProductName(product.getProductName());
+                productResponse.setProductSeller(product.getProductSeller());
+                productResponse.setProductPrice(product.getProductPrice());
+                productResponse.setSuccessMessage(GetSuccessCode("1003"));
+                productResponse.setSuccessCode("1003");
                 break;
             }
         }
-        return userDetailResponse;
+        return productResponse;
     }
+
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder){

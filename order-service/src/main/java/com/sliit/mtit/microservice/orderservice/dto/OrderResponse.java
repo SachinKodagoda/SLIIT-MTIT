@@ -10,6 +10,11 @@ public class OrderResponse {
     private double tax;
     private double totalDiscount;
     private double total;
+    private String productId;
+    private String productName;
+    private String productSeller;
+    private double productPrice;
+    private double productQuantity;
 
     public String getSuccessMessage() {
         return successMessage;
@@ -81,5 +86,45 @@ public class OrderResponse {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getProductSeller() {
+        return productSeller;
+    }
+
+    public void setProductSeller(String productSeller) {
+        this.productSeller = productSeller;
+    }
+
+    public double getProductPrice() {
+        return productPrice;
+    }
+
+    public void setProductPrice(double productPrice) {
+        this.productPrice = productPrice;
+    }
+
+    public double getProductQuantity() {
+        return productQuantity;
+    }
+
+    public void setProductQuantity(double productQuantity) {
+        this.productQuantity = productQuantity;
     }
 }

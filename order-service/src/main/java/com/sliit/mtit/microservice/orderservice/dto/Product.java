@@ -3,10 +3,10 @@ package com.sliit.mtit.microservice.orderservice.dto;
 public class Product {
     private String productId;
     private String productName;
-    private String productPrice;
+    private double productPrice;
     private String productSeller;
 
-    public Product(String productId, String productName, String productPrice, String productSeller) {
+    public Product(String productId, String productName, double productPrice, String productSeller) {
         this.productId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
@@ -29,11 +29,11 @@ public class Product {
         this.productName = productName;
     }
 
-    public String getProductPrice() {
+    public double getProductPrice() {
         return productPrice;
     }
 
-    public void setProductPrice(String productPrice) {
+    public void setProductPrice(double productPrice) {
         this.productPrice = productPrice;
     }
 

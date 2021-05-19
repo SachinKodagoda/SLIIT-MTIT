@@ -2,7 +2,7 @@ package com.sliit.mtit.microservice.orderservice.dto;
 
 public class PriceCalculationRequest {
     private String userEmail;
-    private Double quantity;
+    private Double productQuantity;
     private String productId;
 
     public String getUserEmail() {
@@ -13,12 +13,12 @@ public class PriceCalculationRequest {
         this.userEmail = userEmail;
     }
 
-    public Double getQuantity() {
-        return quantity;
+    public Double getProductQuantity() {
+        return productQuantity;
     }
 
-    public void setQuantity(Double quantity) {
-        this.quantity = quantity;
+    public void setProductQuantity(Double productQuantity) {
+        this.productQuantity = productQuantity;
     }
 
     public String getProductId() {

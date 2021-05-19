@@ -3,7 +3,8 @@ package com.sliit.mtit.microservice.orderservice.dto;
 public class OrderRequest {
     private String productId;
     private String userEmail;
-    private Double quantity;
+    private double productQuantity;
+    private String userPass;
 
     public String getProductId() {
         return productId;
@@ -21,11 +22,19 @@ public class OrderRequest {
         this.userEmail = userEmail;
     }
 
-    public Double getQuantity() {
-        return quantity;
+    public double getProductQuantity() {
+        return productQuantity;
     }
 
-    public void setQuantity(Double quantity) {
-        this.quantity = quantity;
+    public void setProductQuantity(double productQuantity) {
+        this.productQuantity = productQuantity;
+    }
+
+    public String getUserPass() {
+        return userPass;
+    }
+
+    public void setUserPass(String userPass) {
+        this.userPass = userPass;
     }
 }

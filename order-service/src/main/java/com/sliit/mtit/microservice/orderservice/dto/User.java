@@ -5,15 +5,15 @@ public class User {
     private String userShippingAddress;
     private String userEmail;
     private String userContact;
-    private String password;
+    private String userPass;
     private String userType;
 
-    public User(String userName, String userShippingAddress, String userEmail, String userContact, String password, String userType) {
+    public User(String userName, String userShippingAddress, String userEmail, String userContact, String userPass, String userType) {
         this.userName = userName;
         this.userShippingAddress = userShippingAddress;
         this.userEmail = userEmail;
         this.userContact = userContact;
-        this.password = password;
+        this.userPass = userPass;
         this.userType = userType;
     }
 
@@ -49,12 +49,12 @@ public class User {
         this.userContact = userContact;
     }
 
-    public String getPassword() {
-        return password;
+    public String getUserPass() {
+        return userPass;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setUserPass(String userPass) {
+        this.userPass = userPass;
     }
 
     public String getUserType() {

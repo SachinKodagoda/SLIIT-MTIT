@@ -5,7 +5,7 @@ public class ProductResponse {
     private String successCode;
     private String productId;
     private String productName;
-    private String productPrice;
+    private double productPrice;
     private String productSeller;
 
     public String getSuccessMessage() {
@@ -40,11 +40,11 @@ public class ProductResponse {
         this.productName = productName;
     }
 
-    public String getProductPrice() {
+    public double getProductPrice() {
         return productPrice;
     }
 
-    public void setProductPrice(String productPrice) {
+    public void setProductPrice(double productPrice) {
         this.productPrice = productPrice;
     }
 

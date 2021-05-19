@@ -7,7 +7,7 @@ public class UserDetailResponse {
     private String userShippingAddress;
     private String userEmail;
     private String userContact;
-    private String password;
+    private String userPass;
     private String userType;
 
     public String getSuccessMessage() {
@@ -58,12 +58,12 @@ public class UserDetailResponse {
         this.userContact = userContact;
     }
 
-    public String getPassword() {
-        return password;
+    public String getUserPass() {
+        return userPass;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setUserPass(String userPass) {
+        this.userPass = userPass;
     }
 
     public String getUserType() {

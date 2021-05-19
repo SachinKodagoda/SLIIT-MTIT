@@ -27,6 +27,7 @@ public class OrderServiceImpl {
         messagesArr.put("1003","Product data retrieved successfully");
         messagesArr.put("1004","Successfully price calculated");
         messagesArr.put("1005","Successfully shipment data received");
+        messagesArr.put("1006","Successfully discount calculated");
 
         messagesArr.put("2001","Order couldn't create.try again!");
         messagesArr.put("2002","User name or password is wrong.try again!");
@@ -41,14 +42,6 @@ public class OrderServiceImpl {
         usersObjectArr[1] = new User("Abinaya","Negombo", "abinaya.yoga@gmail.com", "0765122944", "pass456", "type2");
     }
 
-    // CheckValidUser --------------------------------------------------
-    public boolean CheckValidUser(OrderRequest orderRequest){
-        UserDetailRequest userDetailRequest = new UserDetailRequest();
-        userDetailRequest.setUserEmail(orderRequest.getUserEmail());
-        userDetailRequest.setUserPass(orderRequest.getUserPass());
-        UserDetailResponse userDetailResponse =  GetUserData(userDetailRequest);
-        return null != userDetailResponse.getUserPass();
-    }
 
     // GetSuccessCode Function --------------------------------------------------
     public String GetSuccessCode(String code){
@@ -58,20 +51,6 @@ public class OrderServiceImpl {
             }
         }
         return "Something went wrong";
-    }
-
-    // GetSuccessCode Function --------------------------------------------------
-    public double TaxCalculation(double billAmount){
-        if (billAmount > 2000) return billAmount * 0.01;
-        return 0;
-    }
-
-    // Calculate Current Date Function --------------------------------------------------
-    public String GetCurrentDate(){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, 7);
-        return sdf.format(cal.getTime());
     }
 
     // GetUserData API ==================================================================
@@ -117,49 +96,112 @@ public class OrderServiceImpl {
     }
 
     // GetShipmentData API ==================================================================
+    public String GetCurrentDate(){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_MONTH, 7);
+        return sdf.format(cal.getTime());
+    }
     public ShipmentResponse GetShipmentData(ShipmentRequest shipmentRequest){
         ShipmentResponse shipmentResponse = new ShipmentResponse();
+        // Validate User and Get Data....
         UserDetailRequest userDetailRequest =  new UserDetailRequest();
         userDetailRequest.setUserPass(shipmentRequest.getUserPass());
         userDetailRequest.setUserEmail(shipmentRequest.getUserEmail());
-        UserDetailResponse userDetail = GetUserData(userDetailRequest);
-        shipmentResponse.setShippingAddress(userDetail.getUserShippingAddress());
-        shipmentResponse.setPossibleShippingDate(GetCurrentDate());
-        shipmentResponse.setShippingTrackId(UUID.randomUUID().toString());
-        shipmentResponse.setSuccessMessage(GetSuccessCode("1005"));
-        shipmentResponse.setSuccessCode("1005");
+        UserDetailResponse userDetailResponse = GetUserData(userDetailRequest);
+        if(userDetailResponse.getSuccessCode().equals("1002")){
+            // Set Shipment data
+            shipmentResponse.setShippingAddress(userDetailResponse.getUserShippingAddress());
+            shipmentResponse.setPossibleShippingDate(GetCurrentDate());
+            shipmentResponse.setShippingTrackId(UUID.randomUUID().toString());
+            shipmentResponse.setSuccessMessage(GetSuccessCode("1005"));
+            shipmentResponse.setSuccessCode("1005");
+        }else{
+            shipmentResponse.setSuccessMessage(GetSuccessCode(userDetailResponse.getSuccessCode()));
+            shipmentResponse.setSuccessCode(userDetailResponse.getSuccessCode());
+        }
         return shipmentResponse;
     }
 
     // CalculatePrice API ==================================================================
-    public PriceCalculationResponse CalculatePrice(PriceCalculationRequest priceCalculationRequest){
-        UserDiscountRequest userDiscountRequest = new UserDiscountRequest();
+    public double TaxCalculation(double billAmount){
+        if (billAmount > 2000) return billAmount * 0.01;
+        return 0;
+    }
+
+    public PriceCalculationResponse PriceCalculation(PriceCalculationRequest priceCalculationRequest){
         PriceCalculationResponse priceCalculationResponse = new PriceCalculationResponse();
-        priceCalculationResponse.setSuccessMessage(GetSuccessCode("2004"));
-        priceCalculationResponse.setSuccessCode("2004");
-        userDiscountRequest.setUserEmail(priceCalculationRequest.getUserEmail());
-        UserDiscountResponse userDiscountResponse = CalculateUserDiscount(userDiscountRequest);
-        // Get Product Details ....
+
+        // Validate Product and Get Data ....
         ProductRequest productRequest = new ProductRequest();
         productRequest.setProductId(priceCalculationRequest.getProductId());
         ProductResponse productResponse = GetProductData(productRequest);
-        if(productResponse.getProductId() != null){
-            double subTotal = priceCalculationRequest.getProductQuantity() * productResponse.getProductPrice();
-            double tax = TaxCalculation(subTotal);
-            double margin = 1000.0;
-            double totalDiscount = 0;
-            if(subTotal > margin){
-                totalDiscount = (subTotal - margin) * userDiscountResponse.getDiscountPercentage();
-            }
+        if(productResponse.getSuccessCode().equals("1003")){
+            UserDiscountRequest userDiscountRequest = new UserDiscountRequest();
+            userDiscountRequest.setUserEmail(priceCalculationRequest.getUserEmail());
+            UserDiscountResponse userDiscountResponse = UserDiscount(userDiscountRequest);
+            if(userDiscountResponse.getSuccessCode().equals("1006")){
+                double subTotal = priceCalculationRequest.getProductQuantity() * productResponse.getProductPrice();
+                double tax = TaxCalculation(subTotal);
+                double margin = 1000.0;
+                double totalDiscount = 0;
+                if(subTotal > margin){
+                    totalDiscount = (subTotal - margin) * userDiscountResponse.getDiscountPercentage();
+                }
 
-            priceCalculationResponse.setSubTotal(subTotal);
-            priceCalculationResponse.setTax(tax);
-            priceCalculationResponse.setTotalDiscount(totalDiscount);
-            priceCalculationResponse.setTotal(subTotal-totalDiscount+tax);
-            priceCalculationResponse.setSuccessMessage(GetSuccessCode("1004"));
-            priceCalculationResponse.setSuccessCode("1004");
+                priceCalculationResponse.setSubTotal(subTotal);
+                priceCalculationResponse.setTax(tax);
+                priceCalculationResponse.setTotalDiscount(totalDiscount);
+                priceCalculationResponse.setTotal(subTotal-totalDiscount+tax);
+                priceCalculationResponse.setSuccessMessage(GetSuccessCode("1004"));
+                priceCalculationResponse.setSuccessCode("1004");
+            }else{
+                priceCalculationResponse.setSuccessMessage(GetSuccessCode(userDiscountResponse.getSuccessCode()));
+                priceCalculationResponse.setSuccessCode(userDiscountResponse.getSuccessCode());
+            }
+        }else{
+            priceCalculationResponse.setSuccessMessage(GetSuccessCode(productResponse.getSuccessCode()));
+            priceCalculationResponse.setSuccessCode(productResponse.getSuccessCode());
         }
         return priceCalculationResponse;
+    }
+
+    // CalculateUserDiscount API ==================================================================
+    public UserDiscountResponse UserDiscount(UserDiscountRequest userDiscountRequest){
+        UserDiscountResponse userDiscountResponse = new UserDiscountResponse();
+        String userType = "type4";
+        double discount;
+        // Validate User ....
+        UserDetailRequest userDetailRequest = new UserDetailRequest();
+        userDetailRequest.setUserEmail(userDiscountRequest.getUserEmail());
+        userDetailRequest.setUserPass(userDiscountRequest.getUserPass());
+        UserDetailResponse userDetailResponse =  GetUserData(userDetailRequest);
+        if(userDetailResponse.getSuccessCode().equals("1002") ){
+            if(userDetailResponse.getUserType() != null){
+                userType = userDetailResponse.getUserType();
+            }
+            switch(userType) {
+                case "type1":
+                    discount = 0.05;
+                    break;
+                case "type2":
+                    discount = 0.02;
+                    break;
+                case "type3":
+                    discount = 0.01;
+                    break;
+                case "type4":
+                default:
+                    discount = 0;
+            }
+            userDiscountResponse.setUserEmail(userDetailResponse.getUserEmail());
+            userDiscountResponse.setUserType(userType);
+            userDiscountResponse.setDiscountPercentage(discount);
+        }else{
+            userDiscountResponse.setSuccessMessage(GetSuccessCode(userDetailResponse.getSuccessCode()));
+            userDiscountResponse.setSuccessCode(userDetailResponse.getSuccessCode());
+        }
+        return userDiscountResponse;
     }
 
 
@@ -168,85 +210,71 @@ public class OrderServiceImpl {
         // This is the order response object
         OrderResponse orderResponse = new OrderResponse();
 
-        // Check User availability and set Data accordingly
-        boolean validUser = CheckValidUser(orderRequest);
-        String successCode = validUser ? "1001": "2002";
-//        orderResponse.setSuccessMessage(GetSuccessCode(successCode));
-//        orderResponse.setSuccessCode(successCode);
-//
-//        orderResponse.setSuccessMessage(GetSuccessCode(successCode));
-//        orderResponse.setSuccessCode(successCode);
+        // Validate User ....
+        UserDetailRequest userDetailRequest = new UserDetailRequest();
+        userDetailRequest.setUserEmail(orderRequest.getUserEmail());
+        userDetailRequest.setUserPass(orderRequest.getUserPass());
+        UserDetailResponse userDetailResponse =  GetUserData(userDetailRequest);
 
-        if(validUser){
-            // Get shipping Data ....
+        if(userDetailResponse.getSuccessCode().equals("1002") ){
+            // Get Shipping Data ....
             ShipmentRequest shipmentRequest = new ShipmentRequest();
             shipmentRequest.setUserEmail(orderRequest.getUserEmail());
             ShipmentResponse shipmentResponse = GetShipmentData(shipmentRequest);
-            // Set Order Response
-            orderResponse.setShippingTrackId(shipmentResponse.getShippingTrackId());
-            orderResponse.setShippingAddress(shipmentResponse.getShippingAddress());
-            orderResponse.setPossibleShippingDate(shipmentResponse.getPossibleShippingDate());
 
-            // Calculate price ....
-            PriceCalculationRequest priceCalculationRequest = new PriceCalculationRequest();
-            priceCalculationRequest.setProductId(orderRequest.getProductId());
-            priceCalculationRequest.setProductQuantity(orderRequest.getProductQuantity());
-            priceCalculationRequest.setUserEmail(orderRequest.getUserEmail());
-            PriceCalculationResponse priceCalculationResponse = CalculatePrice(priceCalculationRequest);
-            // Set Order Response
-            orderResponse.setTax(priceCalculationResponse.getTax());
-            orderResponse.setSubTotal(priceCalculationResponse.getSubTotal());
-            orderResponse.setTotal(priceCalculationResponse.getTotal());
-            orderResponse.setTotalDiscount(priceCalculationResponse.getTotalDiscount());
+            if(shipmentResponse.getSuccessCode().equals("1005")){
+                // Set Shipping Data
+                orderResponse.setShippingTrackId(shipmentResponse.getShippingTrackId());
+                orderResponse.setShippingAddress(shipmentResponse.getShippingAddress());
+                orderResponse.setPossibleShippingDate(shipmentResponse.getPossibleShippingDate());
 
-            // Get Product Details ....
-            ProductRequest productRequest = new ProductRequest();
-            productRequest.setProductId(orderRequest.getProductId());
-            ProductResponse productResponse = GetProductData(productRequest);
-            // Set Order Response
-            orderResponse.setProductQuantity(orderRequest.getProductQuantity());
-            orderResponse.setProductName(productResponse.getProductName());
-            orderResponse.setProductId(productResponse.getProductId());
-            orderResponse.setProductSeller(productResponse.getProductSeller());
-            orderResponse.setProductPrice(productResponse.getProductPrice());
-//            orderResponse.setSuccessMessage(GetSuccessCode(successCode));
-//            orderResponse.setSuccessCode(successCode);
+                // Get Product Details ....
+                ProductRequest productRequest = new ProductRequest();
+                productRequest.setProductId(orderRequest.getProductId());
+                ProductResponse productResponse = GetProductData(productRequest);
+
+                if(productResponse.getSuccessCode().equals("1003")){
+                    // Set Order Response
+                    orderResponse.setProductQuantity(orderRequest.getProductQuantity());
+                    orderResponse.setProductName(productResponse.getProductName());
+                    orderResponse.setProductId(productResponse.getProductId());
+                    orderResponse.setProductSeller(productResponse.getProductSeller());
+                    orderResponse.setProductPrice(productResponse.getProductPrice());
+
+                    // Get Calculated price ....
+                    PriceCalculationRequest priceCalculationRequest = new PriceCalculationRequest();
+                    priceCalculationRequest.setProductId(orderRequest.getProductId());
+                    priceCalculationRequest.setProductQuantity(orderRequest.getProductQuantity());
+                    priceCalculationRequest.setUserEmail(orderRequest.getUserEmail());
+                    PriceCalculationResponse priceCalculationResponse = PriceCalculation(priceCalculationRequest);
+                    if(priceCalculationResponse.getSuccessCode().equals("1004")){
+                        // Set Calculated price
+                        orderResponse.setTax(priceCalculationResponse.getTax());
+                        orderResponse.setSubTotal(priceCalculationResponse.getSubTotal());
+                        orderResponse.setTotal(priceCalculationResponse.getTotal());
+                        orderResponse.setTotalDiscount(priceCalculationResponse.getTotalDiscount());
+                        // Request is totally successful
+                        orderResponse.setSuccessMessage(GetSuccessCode("1001"));
+                        orderResponse.setSuccessCode("1001");
+                        orderResponse.setOrderId(UUID.randomUUID().toString());
+
+                    }else{
+                        orderResponse.setSuccessMessage(GetSuccessCode(priceCalculationResponse.getSuccessCode()));
+                        orderResponse.setSuccessCode(priceCalculationResponse.getSuccessCode());
+                    }
+                }else{
+                    orderResponse.setSuccessMessage(GetSuccessCode(productResponse.getSuccessCode()));
+                    orderResponse.setSuccessCode(productResponse.getSuccessCode());
+                }
+            }else{
+                orderResponse.setSuccessMessage(GetSuccessCode(shipmentResponse.getSuccessCode()));
+                orderResponse.setSuccessCode(shipmentResponse.getSuccessCode());
+            }
+        }else{
+            orderResponse.setSuccessMessage(GetSuccessCode(userDetailResponse.getSuccessCode()));
+            orderResponse.setSuccessCode(userDetailResponse.getSuccessCode());
         }
-        // send order ID as a response
         return orderResponse;
-    }
-
-    // CalculateUserDiscount API ==================================================================
-    public UserDiscountResponse CalculateUserDiscount(UserDiscountRequest userDiscountRequest){
-        String userType = "type4";
-        String userEmail = userDiscountRequest.getUserEmail();
-        double discount;
-        UserDiscountResponse userDiscountResponse = new UserDiscountResponse();
-        UserDetailRequest userDetailRequest = new UserDetailRequest();
-        userDetailRequest.setUserEmail(userEmail);
-        userDetailRequest.setUserPass(userDiscountRequest.getUserPass());
-        UserDetailResponse userDetailResponse =  GetUserData(userDetailRequest);
-        if(userDetailResponse.getUserType() != null){
-            userType = userDetailResponse.getUserType();
-        }
-        switch(userType) {
-            case "type1":
-                discount = 0.05;
-                break;
-            case "type2":
-                discount = 0.02;
-                break;
-            case "type3":
-                discount = 0.01;
-                break;
-            case "type4":
-            default:
-                discount = 0;
-        }
-        userDiscountResponse.setUserEmail(userEmail);
-        userDiscountResponse.setUserType(userType);
-        userDiscountResponse.setDiscountPercentage(discount);
-        return userDiscountResponse;
     }
 
     @Bean

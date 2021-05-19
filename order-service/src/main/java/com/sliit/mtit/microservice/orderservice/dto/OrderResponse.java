@@ -3,6 +3,7 @@ package com.sliit.mtit.microservice.orderservice.dto;
 public class OrderResponse {
     private String successMessage;
     private String successCode;
+    private String orderId;
     private String shippingTrackId;
     private String possibleShippingDate;
     private String shippingAddress;
@@ -30,6 +31,14 @@ public class OrderResponse {
 
     public void setSuccessCode(String successCode) {
         this.successCode = successCode;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
     public String getShippingTrackId() {

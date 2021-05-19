@@ -150,7 +150,7 @@ public class OrderServiceImpl {
             priceCalculationRequest.setProductId(orderRequest.getProductId());
             priceCalculationRequest.setQuantity(orderRequest.getQuantity());
             priceCalculationRequest.setUserEmail(orderRequest.getUserEmail());
-            PriceCalculationResponse priceCalculationResponse = CalculateOrder(priceCalculationRequest);
+            PriceCalculationResponse priceCalculationResponse = CalculatePrice(priceCalculationRequest);
             orderResponse.setTax(priceCalculationResponse.getTax());
             orderResponse.setSubTotal(priceCalculationResponse.getSubTotal());
             orderResponse.setTotal(priceCalculationResponse.getTotal());
